@@ -1,8 +1,8 @@
 # herdr-linear
 
 A [Herdr](https://herdr.dev) desktop mod that shows your Linear issues in a
-panel, next to your terminals and agents. Click an issue's circle to mark it
-done, click its title to open it in Linear, click the header to pick which
+panel, next to your terminals and agents. Click an issue's circle twice to
+mark it done, click its title to open it in Linear, click the header to pick which
 list to show.
 
 ![herdr-linear](preview.png)
@@ -89,7 +89,9 @@ The picker works from the keyboard:
 ## What a row shows
 
 - A circle colored by priority (urgent red, high orange, medium blue, low and
-  none grey). Clicking it moves the issue to your team's completed state.
+  none grey). The first click arms it ("again → Done" for 3 seconds); a
+  second click moves the issue to your team's completed state. Marking done is
+  visible to the whole team, so one stray click changes nothing.
 - The issue identifier (`ENG-42`) and title.
 - A dot in the color of its workflow state; hover it for the state's name.
 
@@ -119,7 +121,7 @@ The panel takes the keyboard like a pane: `pane.go` reaches it, for example
 |------------------|----------------------------------|
 | `j` / `k`        | Next / previous issue            |
 | `g` / `G`        | First / last issue               |
-| `x` or `Space`   | Mark the selected issue done     |
+| `x` `x`          | Mark the selected issue done (press twice) |
 | `Enter` or `o`   | Open it in Linear                |
 | `r`              | Refresh                          |
 | `/` or `m`       | Pick a list                      |

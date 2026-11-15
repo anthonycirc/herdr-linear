@@ -26,8 +26,11 @@ the issue done, its identifier and a title that opens it in Linear.
 - Reads issues on start, every `refresh` seconds (default 60, minimum 15) and
   when the refresh icon is clicked. Sorted by state type (started, unstarted,
   backlog, triage), then priority (urgent first, none last), then last update.
-- Hovering a circle fills it. Clicking it runs `linear issue update <id>
-  --state completed`, greys the row while pending, then reads again.
+- Hovering a circle fills it. The first click (or `x`) arms the issue for
+  3 s: the circle stays filled and the state dot becomes "again → Done" in
+  `ansi1`. A second click (or `x`) on the same issue runs `linear issue update
+  <id> --state completed`, greys the row while pending, then reads again.
+  Moving the selection or waiting disarms it.
 - Clicking a title opens the issue (`linear issue view <id> --web`).
 - Clicking the header opens a 280x440 popup: a search input (Enter lists
   `--all-teams --search <text>`), then Lists (My issues, In progress, Todo,
@@ -46,7 +49,7 @@ the issue done, its identifier and a title that opens it in Linear.
   the list closes. A 10.5px `dim` footer lists the keys.
 - `mod.json` has `"focusable": true`: `pane.go` gives the panel the keyboard.
   Focused, the selected row has the `selected` background and a footer lists
-  the keys: `j`/`k`, `g`/`G`, `x`/Space done, Enter/`o` open, `r` refresh,
+  the keys: `j`/`k`, `g`/`G`, `x` twice done, Enter/`o` open, `r` refresh,
   `/`/`m` the picker (as a dialog), `l`/Esc `pane.go` right.
 - Commands: `linear.refresh`, `linear.menu` (the picker as a dialog).
 - One read at a time: a refresh during a read runs once it ends.
@@ -88,7 +91,8 @@ the issue done, its identifier and a title that opens it in Linear.
 - `herdr-app check ~/.config/herdr-app/mods/linear` passes.
 - The panel lists the same issues as
   `linear issue query --assignee @me --all-teams --state unstarted --state started`.
-- Clicking a circle moves that issue to Done and the row disappears.
+- One click on a circle only arms it; a second click within 3 s moves that
+  issue to Done and the row disappears.
 - Clicking a title opens the issue.
 - Picking a team, project or label lists its issues and survives a restart;
   a search lists matching issues.
