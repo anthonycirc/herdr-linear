@@ -67,6 +67,9 @@ the issue done, its identifier and a title that opens it in Linear.
   `exec("linear", …)` with the user's PATH. No network access from the mod
   itself, no key stored: the CLI holds it in the keyring.
 
+- `keys.json`: `{ "global": { "cmd-shift-i": "linear.menu" } }`, merged into the person's keys
+  only where the key is free.
+
 ## Watch out
 
 - `exec` rejects when `linear` can't start: that is the "not installed"
