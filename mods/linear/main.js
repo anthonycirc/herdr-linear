@@ -1,5 +1,5 @@
 // Linear issues in a Herdr panel, read through the `linear` CLI (schpet/linear-cli).
-// Click the circle to mark an issue done, the title to open it, the header to pick a list.
+// Click the circle twice to mark an issue done, the title to open it, the header to pick a list.
 //
 // Block props (all optional):
 //   args     `linear issue query` filters shown until a list is picked
@@ -18,6 +18,8 @@ const ACTIVE = ["--state", "unstarted", "--state", "started"];
 const MINE = ["--assignee", "@me", "--all-teams"];
 const DEFAULT_ARGS = [...MINE, ...ACTIVE];
 const DEFAULT_REFRESH_S = 60;
+// Marking done changes the issue for the whole team: the first click or x only arms it.
+const CONFIRM_MS = 3000;
 const INSTALL_HINT = "brew install schpet/tap/linear, then linear auth login";
 
 const PRESETS = [
@@ -82,6 +84,7 @@ export default class Linear extends View {
     this.refreshing = false;
     this.again = false;
     this.pending = new Set();
+    this.armed = null;
     this.hovered = null;
     this.sel = 0;
     this.handle = cx.focus_handle();
@@ -138,6 +141,22 @@ export default class Linear extends View {
     });
   }
 
+  // First press arms the issue for CONFIRM_MS; a second press on the same issue marks it done.
+  confirm(issue, cx) {
+    if (this.armed !== issue.id) {
+      this.armed = issue.id;
+      cx.timer.after(CONFIRM_MS, (cx) => {
+        if (this.armed !== issue.id) return;
+        this.armed = null;
+        cx.notify();
+      });
+      cx.notify();
+      return;
+    }
+    this.armed = null;
+    this.complete(issue, cx);
+  }
+
   complete(issue, cx) {
     if (this.pending.has(issue.id)) return;
     this.pending.add(issue.id);
@@ -163,6 +182,7 @@ export default class Linear extends View {
     const k = e.key;
     const n = this.issues.length;
     const move = (to) => {
+      this.armed = null;
       this.sel = Math.max(0, Math.min(n - 1, to));
       this.listScroll.scroll_to_item(this.sel);
     };
@@ -172,7 +192,7 @@ export default class Linear extends View {
     else if (k === "k" || k === "up") move(this.sel - 1);
     else if (k === "G" || (k === "g" && e.modifiers?.shift)) move(n - 1);
     else if (k === "g") move(0);
-    else if (k === "x" || k === "space") issue && this.complete(issue, cx);
+    else if (k === "x" || k === "space") issue && this.confirm(issue, cx);
     else if (k === "enter" || k === "o") issue && openIssue(issue);
     else if (k === "r") this.refresh(cx);
     else if (k === "/" || k === "m") this.openMenu("dialog");
@@ -185,6 +205,7 @@ export default class Linear extends View {
   row(t, issue, i, focused) {
     const selected = focused && i === this.sel;
     const done = this.pending.has(issue.id);
+    const armed = this.armed === issue.id;
     const color = priorityColor(t, issue.priority);
     return h_flex()
       .id(`ln-${issue.id}`)
@@ -210,11 +231,11 @@ export default class Linear extends View {
           .border(1.5)
           .border_color(color)
           .cursor_pointer()
-          .when(done || this.hovered === issue.id, (el) => el.bg(color))
-          .tooltip(`Mark done · ${issue.priorityLabel ?? "No priority"}`)
+          .when(done || armed || this.hovered === issue.id, (el) => el.bg(color))
+          .tooltip(armed ? "Click again to mark done" : `Mark done · ${issue.priorityLabel ?? "No priority"}`)
           .on_click((_e, cx) => {
             cx.stop_propagation();
-            this.complete(issue, cx);
+            this.confirm(issue, cx);
           }),
       )
       .child(div().flex_none().text_size(11).text_color(t.dim).child(issue.identifier))
@@ -231,12 +252,14 @@ export default class Linear extends View {
           .child(issue.title),
       )
       .child(
-        div()
-          .flex_none()
-          .size(8)
-          .rounded(4)
-          .bg(issue.state?.color ?? t.dim)
-          .tooltip(issue.state?.name ?? ""),
+        armed
+          ? div().flex_none().text_size(11).text_color(t.ansi1).child("again → Done")
+          : div()
+              .flex_none()
+              .size(8)
+              .rounded(4)
+              .bg(issue.state?.color ?? t.dim)
+              .tooltip(issue.state?.name ?? ""),
       );
   }
 
@@ -326,7 +349,7 @@ export default class Linear extends View {
             .flex_none()
             .text_size(10.5)
             .text_color(t.dim)
-            .child("j/k move · x done · ⏎ open · / list · l back"),
+            .child("j/k move · x x done · ⏎ open · / list · l back"),
         ),
       );
   }
