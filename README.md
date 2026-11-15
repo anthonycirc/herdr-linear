@@ -132,7 +132,9 @@ The panel takes the keyboard like a pane: `pane.go` reaches it, for example
 | `linear.refresh` | Reads the list again      |
 | `linear.menu`    | Opens the list picker     |
 
-Bind them in `~/.config/herdr-app/keys.json`, for example:
+This repo's [`keys.json`](keys.json) binds `cmd-shift-i` to `linear.menu`; merge it into
+`~/.config/herdr-app/keys.json` (the agent does it when it adds the mod). For
+example:
 
 ```json
 { "global": { "cmd-shift-i": "linear.menu" } }
